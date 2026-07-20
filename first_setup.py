@@ -107,11 +107,23 @@ def setup_database(host, user, password, db_name):
 
     # mysql-connector's own multi-statement executor is comment/string-aware
     # (unlike a hand-rolled regex split), so it reliably runs every statement
-    # in the file, in order, in one round trip.
+    # in the file, in order, in one round trip. The exact API differs by
+    # connector version/cursor type: older/pure-Python cursors take
+    # execute(sql, multi=True) and return a generator of per-statement
+    # results; newer C-extension cursors (mysql-connector-python 9.x) just
+    # take the whole script and expose subsequent statements via nextset().
     try:
-        for result in cur.execute(sql_body, multi=True):
-            if result.with_rows:
-                result.fetchall()
+        try:
+            for result in cur.execute(sql_body, multi=True):
+                if result.with_rows:
+                    result.fetchall()
+        except TypeError:
+            cur.execute(sql_body)
+            if cur.with_rows:
+                cur.fetchall()
+            while cur.nextset():
+                if cur.with_rows:
+                    cur.fetchall()
     except mysql.connector.Error as e:
         if e.errno in (1050, 1062):  # table exists / dup entry — fine on a re-run
             warn(f"Some statements skipped (already exist): {e}")
