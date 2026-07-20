@@ -92,30 +92,44 @@ def setup_database(host, user, password, db_name):
     step(5, "Running schema.sql…")
     schema_path = os.path.join(os.path.dirname(__file__), "schema.sql")
     with open(schema_path, "r", encoding="utf-8") as f:
-        sql_raw = f.read()
+        lines = f.readlines()
 
-    # Switch to drdo_portal DB
+    # We already created/selected db_name above — drop schema.sql's own
+    # CREATE DATABASE / USE lines so a custom --database name isn't overridden.
+    body_lines = [
+        ln for ln in lines
+        if not ln.strip().upper().startswith("CREATE DATABASE")
+        and not ln.strip().upper().startswith("USE ")
+    ]
+    sql_body = "".join(body_lines)
+
     conn.database = db_name
 
-    # Split and execute statements
-    import re
-    statements = [s.strip() for s in re.split(r';\s*\n', sql_raw) if s.strip() and not s.strip().startswith("--")]
-    skipped = 0
-    for stmt in statements:
-        stmt = stmt.strip().rstrip(";")
-        if not stmt or stmt.upper().startswith("CREATE DATABASE") or stmt.upper().startswith("USE "):
-            continue
-        try:
-            cur.execute(stmt)
-        except mysql.connector.Error as e:
-            if e.errno in (1050, 1062):  # table exists / dup entry
-                skipped += 1
-            else:
-                warn(f"SQL warning: {e}")
+    # mysql-connector's own multi-statement executor is comment/string-aware
+    # (unlike a hand-rolled regex split), so it reliably runs every statement
+    # in the file, in order, in one round trip.
+    try:
+        for result in cur.execute(sql_body, multi=True):
+            if result.with_rows:
+                result.fetchall()
+    except mysql.connector.Error as e:
+        if e.errno in (1050, 1062):  # table exists / dup entry — fine on a re-run
+            warn(f"Some statements skipped (already exist): {e}")
+        else:
+            fail(f"schema.sql failed to apply: {e}")
     conn.commit()
-    if skipped:
-        warn(f"{skipped} statement(s) skipped (already exist — that's fine).")
-    ok("Schema applied — tables and seed positions created.")
+
+    # Verify the schema actually landed instead of trusting a blind success message.
+    cur.execute("SHOW TABLES")
+    tables = {row[0] for row in cur.fetchall()}
+    required = {"users", "candidate_profiles", "internship_positions",
+                "applications", "application_history"}
+    missing = required - tables
+    if missing:
+        fail(f"Schema verification failed — missing table(s): {', '.join(sorted(missing))}")
+    cur.execute("SELECT COUNT(*) FROM internship_positions")
+    pos_count = cur.fetchone()[0]
+    ok(f"Schema applied — {len(tables)} tables present, {pos_count} seed position(s) loaded.")
     return conn, cur
 
 # ── 6. Create demo accounts ─────────────────────────────────
@@ -172,7 +186,7 @@ def print_summary(db_name):
       python app.py
 
   {bold('Open in browser:')}
-      http://localhost:5000
+      http://localhost:5050
 
   {bold('Demo Login Credentials:')}
   ┌─────────────┬──────────────────────────┬──────────────┐

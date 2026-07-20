@@ -9,18 +9,18 @@ A Flask + MySQL internship application portal (DRDO Internship Portal) with thre
 ## Setup & running
 
 ```bash
-python first_setup.py          # one-time: installs deps, creates DB, runs schema.sql, creates demo accounts
-python app.py                  # runs the app on http://localhost:5000 (debug=True)
+python first_setup.py          # one-time: installs deps, creates DB, runs schema.sql, creates demo accounts, writes .env
+python app.py                  # runs the app on http://localhost:5050 (debug=True)
 ```
 
 Manual setup (if not using `first_setup.py`):
 ```bash
 pip install -r requirements.txt
-mysql -u root -p < schema.sql          # creates drdo_portal DB + tables + seed positions
-python setup_demo.py                   # creates/updates demo accounts with correct password hashes
+mysql -u root -p < schema.sql          # creates drdo_portal DB + tables + seed positions (demo accounts already work after this)
+cp .env.example .env                   # then fill in your real DB_PASS
 ```
 
-DB credentials are read from env vars (`DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`) with hardcoded fallbacks in `app.py`'s `DB_CONFIG` (~line 85) — edit those fallbacks directly for local dev, or export the env vars.
+DB credentials and `SECRET_KEY` are read from a `.env` file (loaded via `python-dotenv`; see `.env.example`) into env vars (`DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`, `SECRET_KEY`) consumed by `app.py`'s `DB_CONFIG`. `.env` is gitignored — never hardcode real credentials in `app.py` itself.
 
 There is no test suite, linter, or build step configured in this repo.
 

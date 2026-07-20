@@ -34,25 +34,27 @@ pip install -r requirements.txt
 ```bash
 mysql -u root -p < schema.sql
 ```
+> **Windows PowerShell users:** PowerShell doesn't support `<` for input redirection. Wrap the command instead:
+> ```powershell
+> cmd /c "mysql -u root -p < schema.sql"
+> ```
 
-**3. Set your MySQL password in `app.py`**
+`schema.sql` already seeds the four demo accounts with working password hashes, so login works immediately after this step — `setup_demo.py` is only needed later if you want to reset a demo password.
 
-Open `app.py` and edit the `DB_CONFIG` block (~line 20):
-```python
-DB_CONFIG = {
-    "host":     "localhost",
-    "user":     "root",
-    "password": "YOUR_PASSWORD",   # ← change this
-    "database": "drdo_portal",
-}
-```
+**3. Create a `.env` file**
 
-**4. Create demo accounts**
+Copy `.env.example` to `.env` and fill in your real MySQL password:
 ```bash
-python setup_demo.py
+cp .env.example .env
 ```
-
-> `setup_demo.py` connects to MySQL and inserts the four demo users (Admin, HR, and two Candidates) with correctly hashed passwords. If a user already exists, it just updates the password. Edit `DB_CONFIG` at the top of that file to match your credentials before running.
+```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASS=YOUR_PASSWORD
+DB_NAME=drdo_portal
+SECRET_KEY=change-me-in-production
+```
+`.env` is gitignored — never commit real credentials to `app.py` or to git.
 
 ---
 
@@ -62,7 +64,7 @@ python setup_demo.py
 python app.py
 ```
 
-Open **http://localhost:5000**
+Open **http://localhost:5050**
 
 ---
 

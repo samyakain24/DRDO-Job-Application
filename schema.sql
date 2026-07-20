@@ -108,18 +108,20 @@ CREATE TABLE IF NOT EXISTS application_history (
 -- 6. SEED DATA  (admin + 1 HR + 2 candidates + positions)
 -- ============================================================
 
--- Passwords are hashed via werkzeug pbkdf2:sha256
+-- Passwords are hashed via werkzeug's generate_password_hash (scrypt by default).
 -- admin@drdo.in      → password: Admin@1234
 -- hr@drdo.in         → password: Hr@1234
 -- alice@example.com  → password: Alice@1234
 -- bob@example.com    → password: Bob@1234
 -- (re-generate hashes with: python -c "from werkzeug.security import generate_password_hash; print(generate_password_hash('YourPass'))")
+-- These are real, working hashes — logging in right after this file runs
+-- works immediately, without needing to also run setup_demo.py.
 
 INSERT INTO users (full_name, email, password_hash, role, phone) VALUES
-('DRDO Admin',    'admin@drdo.in',      'pbkdf2:sha256:600000$drdo$7b2a8c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b', 'admin', '9000000001'),
-('Dr. Ramesh HR', 'hr@drdo.in',         'pbkdf2:sha256:600000$drdo$7b2a8c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b', 'hr',    '9000000002'),
-('Alice Sharma',  'alice@example.com',  'pbkdf2:sha256:600000$drdo$7b2a8c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b', 'candidate', '9111111111'),
-('Bob Verma',     'bob@example.com',    'pbkdf2:sha256:600000$drdo$7b2a8c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b', 'candidate', '9222222222');
+('DRDO Admin',    'admin@drdo.in',      'scrypt:32768:8:1$GpoIPze8wgF3xWkT$d826556801feb1ccf33e3d41d7ed71c4fdc79a4ee0141a1c69ff01bca57358e25c6ae03dc38adae2c7e3bb006cf65b026ff7499b9e2a3d9204ecbf197cbc4c65', 'admin', '9000000001'),
+('Dr. Ramesh HR', 'hr@drdo.in',         'scrypt:32768:8:1$dYjMmge0Aaxn9kqA$da9a29db8a7307a0396faf27258d3a4ebb4b9cd518ef1285e125b9843f7aa7d5f05042d0bab53af817c5dc9344ffd5f939164654459b0f3016249fe0a21afff7', 'hr',    '9000000002'),
+('Alice Sharma',  'alice@example.com',  'scrypt:32768:8:1$qQIZq463X6l8l4Ze$257bf957e44cfbb2f6f0702a0c76578f6fee709d1e0b24751d32a82d44ccfbd89d84836a077073366d5a027ac9355cf5083513a2111064cbf79e55924324a094', 'candidate', '9111111111'),
+('Bob Verma',     'bob@example.com',    'scrypt:32768:8:1$jL1HsrGkOF51BkKZ$e1145393d2322d06fcc4ea6c1d270b44f329444a9b1ea5da6a05db9484ab49d2b62f40104b3ca803491fd16c33e811ceac3dc26b3b7c72008299a78ad6ff2ed3', 'candidate', '9222222222');
 
 -- Every candidate needs a matching candidate_profiles row (the /register
 -- route and setup_demo.py create this automatically; raw seed data doesn't
