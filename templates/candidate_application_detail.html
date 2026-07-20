@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title_suffix %} | Application Detail{% endblock %}
+{% block content %}
+
+<div class="mb-3 fade-in">
+  <a href="{{ url_for('candidate_dashboard') }}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+  </a>
+</div>
+
+<div class="page-header fade-in">
+  <div class="d-flex justify-content-between align-items-start">
+    <div>
+      <h4><i class="bi bi-file-earmark-text me-2"></i>{{ application.title }}</h4>
+      <p>{{ application.department }} &bull; {{ application.location }}</p>
+    </div>
+    <span class="badge bg-{{ application.status | status_color }} fs-6 px-3 py-2 mt-1">
+      {{ application.status }}
+    </span>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- LEFT -->
+  <div class="col-md-7">
+    <div class="card fade-in mb-4">
+      <div class="card-header"><i class="bi bi-info-circle me-2 text-muted"></i>Position Details</div>
+      <div class="card-body">
+        <table class="table table-sm table-borderless mb-0">
+          <tr><td class="text-muted" style="width:130px;font-size:.82rem;">Department</td><td class="fw-semibold">{{ application.department }}</td></tr>
+          <tr><td class="text-muted" style="font-size:.82rem;">Location</td><td>{{ application.location }}</td></tr>
+          <tr><td class="text-muted" style="font-size:.82rem;">Duration</td><td>{{ application.duration or '—' }}</td></tr>
+          <tr><td class="text-muted" style="font-size:.82rem;">Stipend</td>
+              <td class="fw-semibold" style="color:#065f46;">
+                {% if application.stipend %}₹{{ "{:,.0f}".format(application.stipend) }}/month{% else %}—{% endif %}
+              </td></tr>
+          <tr><td class="text-muted" style="font-size:.82rem;">Applied On</td><td>{{ application.applied_at | datefmt }}</td></tr>
+          <tr><td class="text-muted" style="font-size:.82rem;">Last Updated</td><td>{{ application.updated_at | datefmt }}</td></tr>
+        </table>
+        {% if application.hr_remarks %}
+        <div class="alert alert-info mt-3 mb-0" style="font-size:.84rem;">
+          <strong><i class="bi bi-chat-left-text me-1"></i>HR Remarks:</strong><br>
+          {{ application.hr_remarks }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if application.cover_letter %}
+    <div class="card fade-in">
+      <div class="card-header"><i class="bi bi-file-text me-2 text-muted"></i>Your Cover Letter</div>
+      <div class="card-body">
+        <p class="text-secondary mb-0" style="white-space:pre-wrap;font-size:.875rem;line-height:1.7;">{{ application.cover_letter }}</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- RIGHT -->
+  <div class="col-md-5">
+    <!-- Status card -->
+    <div class="card fade-in fade-in-1 mb-4 text-center" style="border-top:4px solid var(--navy);">
+      <div class="card-body py-4">
+        <p class="text-muted mb-2" style="font-size:.8rem;letter-spacing:.5px;text-transform:uppercase;">Current Status</p>
+        <span class="badge bg-{{ application.status | status_color }}" style="font-size:1rem;padding:.6em 1.4em;border-radius:999px;">
+          {{ application.status }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Progress stepper -->
+    <div class="card fade-in fade-in-2 mb-4">
+      <div class="card-header"><i class="bi bi-list-check me-2 text-muted"></i>Application Progress</div>
+      <div class="card-body py-3">
+        {% set steps = ['Submitted','Under Review','Shortlisted','Interview Scheduled','Selected'] %}
+        {% set is_rejected = application.status == 'Rejected' %}
+        {% for step in steps %}
+          {% set idx = loop.index0 %}
+          {% set cur_idx = steps.index(application.status) if application.status in steps else -1 %}
+          {% set done   = not is_rejected and idx <= cur_idx %}
+          {% set active = not is_rejected and step == application.status %}
+          <div class="step-item">
+            <div class="step-icon {{ 'step-active' if active else ('step-done' if done else 'step-pending') }}">
+              {% if done and not active %}<i class="bi bi-check-lg"></i>
+              {% elif active %}<i class="bi bi-circle-fill" style="font-size:.5rem;"></i>
+              {% else %}{{ loop.index }}{% endif %}
+            </div>
+            <div>
+              <div class="step-text {{ 'text-muted' if not done and not is_rejected }}">{{ step }}</div>
+            </div>
+          </div>
+        {% endfor %}
+        {% if is_rejected %}
+        <div class="step-item">
+          <div class="step-icon step-rejected"><i class="bi bi-x-lg"></i></div>
+          <div><div class="step-text text-danger">Rejected</div></div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="card fade-in fade-in-3">
+      <div class="card-header"><i class="bi bi-clock-history me-2 text-muted"></i>Activity Log</div>
+      <div class="card-body">
+        {% if history %}
+        <div class="timeline">
+          {% for h in history %}
+          <div class="timeline-item">
+            <div style="font-size:.75rem;color:#6b7280;">{{ h.changed_at | datefmt('%d %b %Y, %H:%M') }}</div>
+            <div class="mt-1">
+              <span class="badge bg-{{ h.new_status | status_color }}">{{ h.new_status }}</span>
+              {% if h.old_status %}<span class="text-muted" style="font-size:.75rem;"> from {{ h.old_status }}</span>{% endif %}
+            </div>
+            {% if h.remarks %}<div class="text-secondary mt-1" style="font-size:.78rem;font-style:italic;">{{ h.remarks }}</div>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted mb-0" style="font-size:.82rem;">No activity yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

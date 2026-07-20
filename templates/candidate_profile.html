@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title_suffix %} | My Profile{% endblock %}
+{% block content %}
+<div class="page-header fade-in">
+  <h4><i class="bi bi-person-vcard me-2"></i>My Profile</h4>
+  <p>Keep your academic details updated — HR reviews this alongside your application.</p>
+</div>
+
+<div class="card fade-in">
+  <div class="card-header"><i class="bi bi-pencil-square me-2 text-muted"></i>Academic & Personal Details</div>
+  <div class="card-body p-4">
+    <form method="POST" enctype="multipart/form-data">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Date of Birth</label>
+          <input type="date" name="dob" class="form-control" value="{{ profile.dob or '' }}"/>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Gender</label>
+          <select name="gender" class="form-select">
+            <option value="">Select</option>
+            {% for g in ['Male','Female','Other'] %}
+            <option {{ 'selected' if profile.gender == g }}>{{ g }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Phone</label>
+          <input type="text" class="form-control" value="{{ session.user_name }}" disabled/>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Address</label>
+          <textarea name="address" rows="2" class="form-control" placeholder="Your current address…">{{ profile.address or '' }}</textarea>
+        </div>
+
+        <div class="col-12"><hr class="my-1"/><p class="fw-semibold mb-0" style="font-size:.82rem;color:#6b7280;text-transform:uppercase;letter-spacing:.8px;">Academic Information</p></div>
+
+        <div class="col-md-6">
+          <label class="form-label">College / University</label>
+          <input type="text" name="college" class="form-control" value="{{ profile.college or '' }}" placeholder="e.g. IIT Delhi"/>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Degree</label>
+          <input type="text" name="degree" class="form-control" value="{{ profile.degree or '' }}" placeholder="e.g. B.Tech"/>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Branch / Specialization</label>
+          <input type="text" name="branch" class="form-control" value="{{ profile.branch or '' }}" placeholder="e.g. Computer Science"/>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Graduation Year</label>
+          <input type="number" name="graduation_year" class="form-control" value="{{ profile.graduation_year or '' }}" min="2020" max="2030"/>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">CGPA <span class="text-muted fw-normal">(out of 10)</span></label>
+          <input type="number" name="cgpa" class="form-control" step="0.01" min="0" max="10" value="{{ profile.cgpa or '' }}" placeholder="e.g. 8.5"/>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Skills</label>
+          <textarea name="skills" rows="3" class="form-control" placeholder="Python, Machine Learning, C++, MATLAB, CAD, etc.">{{ profile.skills or '' }}</textarea>
+        </div>
+
+        <div class="col-12"><hr class="my-1"/><p class="fw-semibold mb-0" style="font-size:.82rem;color:#6b7280;text-transform:uppercase;letter-spacing:.8px;">Resume</p></div>
+
+        <div class="col-12">
+          <label class="form-label">Upload Resume (PDF)</label>
+          <input type="file" name="resume" accept=".pdf" class="form-control"/>
+          {% if profile.resume_url %}
+          <div class="form-text">
+            <i class="bi bi-file-earmark-pdf me-1"></i>
+            Current file: <a href="{{ url_for('static', filename=profile.resume_url) }}" target="_blank">{{ profile.resume_url.split('/')[-1] }}</a>
+            — uploading a new one will replace it and re-run the match.
+          </div>
+          {% else %}
+          <div class="form-text">Upload your resume to see which internship track best matches your profile.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mt-4 d-flex justify-content-end gap-2">
+        <a href="{{ url_for('candidate_dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+        <button class="btn btn-navy px-4"><i class="bi bi-save me-2"></i>Save Profile</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if resume_match %}
+<div class="card fade-in mt-4">
+  <div class="card-header"><i class="bi bi-magic me-2 text-muted"></i>Resume Match Results</div>
+  <div class="card-body p-4">
+    <div class="d-flex align-items-center gap-3 mb-3 p-3" style="background:#f0f4f8;border-radius:10px;">
+      <div style="width:52px;height:52px;background:linear-gradient(135deg,#003366,#004080);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="bi bi-trophy text-white" style="font-size:1.3rem;"></i>
+      </div>
+      <div>
+        <div style="font-size:.75rem;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;">Best-Fit Track</div>
+        <div class="fw-bold" style="font-size:1.05rem;color:#003366;">
+          {{ resume_match.best_role }} <span class="text-muted fw-normal">({{ "%.1f"|format(resume_match.best_pct) }}% match)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Job Role</th>
+            <th class="text-end">ML Match %</th>
+            <th class="text-end">Similarity %</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in resume_match.breakdown %}
+          <tr class="{{ 'table-primary' if r.role == resume_match.best_role }}">
+            <td>{{ r.role }}</td>
+            <td class="text-end">{{ "%.1f"|format(r.ml_match_pct) }}%</td>
+            <td class="text-end">{{ "%.1f"|format(r.similarity_pct) }}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="text-muted mt-3 mb-0" style="font-size:.78rem;">
+      ML Match % is the model's predicted probability your resume fits each track (sums to 100%). Similarity % is an independent
+      cosine-similarity score against that track's job postings, useful for sanity-checking the verdict.
+    </p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

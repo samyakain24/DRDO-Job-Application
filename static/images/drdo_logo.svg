@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Outer ring -->
+  <circle cx="100" cy="100" r="95" fill="#003366" stroke="#FF6600" stroke-width="4"/>
+  <!-- Inner white ring -->
+  <circle cx="100" cy="100" r="80" fill="none" stroke="white" stroke-width="1.5"/>
+  <!-- Inner navy bg -->
+  <circle cx="100" cy="100" r="78" fill="#003366"/>
+
+  <!-- Missile / rocket icon in centre -->
+  <g transform="translate(100,100)">
+    <!-- Rocket body -->
+    <ellipse rx="10" ry="30" fill="white" opacity="0.95"/>
+    <!-- Nose cone -->
+    <polygon points="0,-42 -10,-18 10,-18" fill="#FF6600"/>
+    <!-- Fins -->
+    <polygon points="-10,18 -22,34 -10,28" fill="#FF6600"/>
+    <polygon points="10,18 22,34 10,28"  fill="#FF6600"/>
+    <!-- Window -->
+    <circle cy="-10" r="5" fill="#003366" stroke="white" stroke-width="1.5"/>
+    <!-- Exhaust flame -->
+    <ellipse cy="40" rx="7" ry="10" fill="#FF6600" opacity="0.85"/>
+    <ellipse cy="46" rx="4" ry="7"  fill="#FFD700" opacity="0.9"/>
+  </g>
+
+  <!-- Circular text: DRDO top -->
+  <path id="topArc" d="M 22,100 A 78,78 0 0,1 178,100" fill="none"/>
+  <text font-family="Arial" font-weight="bold" font-size="16" fill="white" letter-spacing="3">
+    <textPath href="#topArc" startOffset="12%">DRDO</textPath>
+  </text>
+
+  <!-- Circular text: bottom -->
+  <path id="botArc" d="M 25,108 A 78,78 0 0,0 175,108" fill="none"/>
+  <text font-family="Arial" font-weight="600" font-size="8.5" fill="#FFD700" letter-spacing="1.2">
+    <textPath href="#botArc" startOffset="5%">DEFENCE RESEARCH &amp; DEVELOPMENT</textPath>
+  </text>
+
+  <!-- Star decorations -->
+  <g fill="#FFD700">
+    <polygon transform="translate(100,38) scale(0.7)" points="0,-8 2,-3 7,-3 3,1 5,6 0,3 -5,6 -3,1 -7,-3 -2,-3"/>
+  </g>
+</svg>

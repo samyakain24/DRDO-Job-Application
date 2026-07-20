@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title_suffix %} | Login{% endblock %}
+
+{% block extra_css %}
+<style>
+  .login-wrap {
+    min-height: calc(100vh - 58px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #001a33 0%, #003366 50%, #004080 100%);
+    padding: 2rem 1rem;
+    margin: -1.75rem -12px;
+  }
+  .login-card { width: 100%; max-width: 430px; }
+  .gov-strip {
+    background: var(--orange);
+    text-align: center;
+    font-size: .7rem;
+    color: #fff;
+    letter-spacing: 1px;
+    padding: 5px 0;
+    font-weight: 700;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .login-header {
+    background: #fff;
+    padding: 1.75rem 2rem 1.25rem;
+    text-align: center;
+  }
+  .login-divider { width: 1px; height: 64px; background: #e5eaf2; }
+  .login-body { background: #fff; padding: 1.5rem 2rem 2rem; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+  .demo-box {
+    background: rgba(255,255,255,.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrap">
+  <div class="login-card fade-in">
+
+    <div class="gov-strip">GOVERNMENT OF INDIA &nbsp;&bull;&nbsp; MINISTRY OF DEFENCE</div>
+
+    <!-- Logos -->
+    <div class="login-header">
+      <div class="d-flex align-items-center justify-content-center gap-4">
+        <img src="{{ url_for('static', filename='images/india_emblem.svg') }}"
+             height="68" alt="Emblem of India"/>
+        <div class="login-divider"></div>
+        <img src="{{ url_for('static', filename='images/drdo_logo.png') }}"
+             height="68" alt="DRDO Logo" style="object-fit:contain;"/>
+      </div>
+      <h5 class="fw-bold mt-3 mb-0" style="color:#003366;letter-spacing:.4px;">DRDO Internship Portal</h5>
+      <p class="text-muted mb-0" style="font-size:.78rem;">Defence Research &amp; Development Organisation</p>
+    </div>
+
+    <!-- Form -->
+    <div class="login-body shadow">
+      <p class="text-center text-muted mb-4" style="font-size:.8rem;letter-spacing:.5px;text-transform:uppercase;">
+        <i class="bi bi-shield-lock me-1"></i>Secure Sign In
+      </p>
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Email Address</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input type="email" name="email" class="form-control" placeholder="you@example.com" required autofocus/>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label">Password</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            <input type="password" name="password" id="pwd" class="form-control" placeholder="Password" required/>
+            <button class="btn btn-outline-secondary" type="button" onclick="togglePwd()">
+              <i class="bi bi-eye" id="eyeIcon"></i>
+            </button>
+          </div>
+        </div>
+        <button class="btn btn-navy w-100 py-2 fw-semibold" style="letter-spacing:.5px;">
+          <i class="bi bi-box-arrow-in-right me-2"></i>LOGIN
+        </button>
+      </form>
+      <p class="text-center mt-3 mb-0" style="font-size:.82rem;">
+        New candidate? <a href="{{ url_for('register') }}" class="fw-semibold" style="color:#FF6600;">Register here</a>
+      </p>
+    </div>
+
+    <!-- Demo credentials -->
+    <div class="demo-box">
+      <p class="fw-semibold text-white mb-2" style="font-size:.78rem;letter-spacing:.5px;text-transform:uppercase;">
+        <i class="bi bi-info-circle me-1"></i>Demo Credentials
+      </p>
+      <table class="table table-sm mb-1" style="color:rgba(255,255,255,.85);font-size:.8rem;">
+        <tr>
+          <td><span class="badge" style="background:#374151;">Admin</span></td>
+          <td>admin@drdo.in</td>
+          <td class="text-warning fw-semibold">Admin@1234</td>
+        </tr>
+        <tr>
+          <td><span class="badge" style="background:#FF6600;">HR</span></td>
+          <td>hr@drdo.in</td>
+          <td class="text-warning fw-semibold">Hr@1234</td>
+        </tr>
+        <tr>
+          <td><span class="badge" style="background:#065f46;">Candidate</span></td>
+          <td>alice@example.com</td>
+          <td class="text-warning fw-semibold">Alice@1234</td>
+        </tr>
+      </table>
+      <p class="mb-0" style="color:rgba(255,255,255,.45);font-size:.68rem;">
+        Run <code style="color:#FFD700;">python setup_demo.py</code> once to activate these accounts.
+      </p>
+    </div>
+
+    <p class="text-center mt-3" style="color:rgba(255,255,255,.3);font-size:.68rem;">
+      &copy; 2024 DRDO. Prototype Only. All rights reserved.
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePwd() {
+  const p = document.getElementById('pwd'), e = document.getElementById('eyeIcon');
+  p.type = p.type === 'password' ? 'text' : 'password';
+  e.className = p.type === 'text' ? 'bi bi-eye-slash' : 'bi bi-eye';
+}
+</script>
+{% endblock %}
