@@ -14,6 +14,7 @@ from functools import wraps
 from datetime import datetime
 import json
 import os
+import re
 import sys
 from dotenv import load_dotenv
 
@@ -55,6 +56,14 @@ except Exception as exc:  # missing model file, missing deps, etc.
 def allowed_resume_file(filename: str) -> bool:
     """True if filename has an extension in ALLOWED_RESUME_EXTENSIONS (PDF only)."""
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_RESUME_EXTENSIONS
+
+
+def clean_resume_filename(filename: str) -> str:
+    """Strip any existing user<id>_ prefix(es) before the caller adds its own,
+    so re-uploading a resume that was previously downloaded/renamed with that
+    prefix still attached doesn't stack prefixes indefinitely
+    (user3_user3_user3_...)."""
+    return re.sub(r"^(?:user\d+_)+", "", filename)
 
 
 def run_resume_match(pdf_path: str):
@@ -619,7 +628,7 @@ def candidate_profile():
                 return redirect(url_for("candidate_profile"))
 
             filename = secure_filename(
-                f"user{session['user_id']}_{resume_file.filename}")
+                f"user{session['user_id']}_{clean_resume_filename(resume_file.filename)}")
             save_path = os.path.join(RESUME_UPLOAD_FOLDER, filename)
             resume_file.save(save_path)
             resume_url = f"uploads/resumes/{filename}"
